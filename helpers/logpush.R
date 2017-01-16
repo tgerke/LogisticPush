@@ -11,9 +11,16 @@ logpush <- function(x, y, wts, nlambda, nfolds, upperFPR, seed=111) {
 	foldids[which(y==1)] <- y1foldids
 	foldids[which(y==0)] <- y0foldids
 	
-	cvfit <- cv.glmnet(x=x, y=y, family="binomial", alpha=1, weights=wts, 
-				   nlambda=nlambda, foldid=foldids, keep=TRUE)
-	
+	# only accepts integer weights for now; really inefficient since blowing up data rowwise
+	# using misclassification error as CV metric
+	newX <- as.big.matrix(x[rep(1:nrow(x), times=wts),])
+	newY <- y[rep(1:length(y), times=wts)]
+	newFoldids <- foldids[rep(1:length(foldids), times=wts)]
+	cvfit <- cv.biglasso(X=newX, y=newY, penalty="lasso", family="binomial", cv.ind=newFoldids, trace=TRUE)
+	### problem: we have no easy way to implement the following, because the predicted values
+	### are not stored within each CV run. Submitted issue to biglasso github requesting custom
+	### objective functions be allowed.
+	                     
 	cvpauc <- vector("list", length=nfolds)
 	for (i in 1:nfolds) {
 		inds <- which(cvfit$foldid==i)

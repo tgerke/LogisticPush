@@ -1,5 +1,5 @@
 setwd("~/Dropbox/pauc/code/LogisticPush")
-library(glmnet)
+library(biglasso)
 library(pROC)
 source("helpers/genData.R")
 source("helpers/logpush.R")
